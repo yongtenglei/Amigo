@@ -1,0 +1,51 @@
+version: "2"
+
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+  modules-download-mode: readonly
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - exhaustive
+    - goconst
+    - godot
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
+    - wrapcheck
+  exclusions:
+    rules:
+      - text: '(slog|log)\.\w+'
+        linters:
+          - noctx
+    generated: lax
+    presets:
+      - common-false-positives
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax

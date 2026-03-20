@@ -1,0 +1,138 @@
+name: docs-format
+
+on:
+  workflow_call:
+    inputs:
+      amigo_repository:
+        type: string
+        required: false
+        default: yongtenglei/amigo
+      node-version:
+        type: string
+        required: false
+        default: "24"
+      format_branch:
+        type: string
+        required: false
+        default: ci/docs-format
+    secrets:
+      amigo_token:
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v6
+        with:
+          path: ${{ github.repository }}
+
+      - name: Detect local docs config
+        id: local-config
+        shell: bash
+        working-directory: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [[ -f .markdownlint.jsonc ]]; then
+            echo "has_markdownlint=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_markdownlint=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [[ -f .prettierrc.json ]]; then
+            echo "has_prettier=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_prettier=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout amigo repository
+        if: steps.local-config.outputs.has_markdownlint != 'true' || steps.local-config.outputs.has_prettier != 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.amigo_repository }}
+          path: amigo
+          token: ${{ secrets.amigo_token || github.token }}
+
+      - name: Resolve docs config
+        id: resolved-config
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          repo_root="${{ github.workspace }}/${{ github.repository }}"
+          amigo_root="${{ github.workspace }}/amigo/templates"
+
+          markdownlint_config="${repo_root}/.markdownlint.jsonc"
+          if [[ ! -f "${markdownlint_config}" ]]; then
+            markdownlint_config="${amigo_root}/.markdownlint.jsonc"
+          fi
+
+          prettier_config="${repo_root}/.prettierrc.json"
+          if [[ ! -f "${prettier_config}" ]]; then
+            prettier_config="${amigo_root}/.prettierrc.json"
+          fi
+
+          echo "markdownlint_config=${markdownlint_config}" >> "$GITHUB_OUTPUT"
+          echo "prettier_config=${prettier_config}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Collect Markdown files
+        id: markdown-files
+        shell: bash
+        working-directory: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          file_list="${RUNNER_TEMP}/markdown-files.txt"
+          git ls-files -z -- '*.md' > "${file_list}"
+
+          if [[ -s "${file_list}" ]]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "file_list=${file_list}" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Format Markdown
+        if: steps.markdown-files.outputs.found == 'true'
+        shell: bash
+        working-directory: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          xargs -0 npx --yes prettier@3 --write \
+            --config "${{ steps.resolved-config.outputs.prettier_config }}" \
+            < "${{ steps.markdown-files.outputs.file_list }}"
+
+      - name: Lint Markdown
+        if: steps.markdown-files.outputs.found == 'true'
+        shell: bash
+        working-directory: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          xargs -0 npx --yes markdownlint-cli2@0 \
+            --config "${{ steps.resolved-config.outputs.markdownlint_config }}" \
+            < "${{ steps.markdown-files.outputs.file_list }}"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.amigo_token || github.token }}
+          commit-message: "docs: format markdown"
+          title: "docs: format markdown"
+          body: |
+            This is an automated pull request to format Markdown files.
+          branch: ${{ inputs.format_branch }}
+          delete-branch: true
+          path: ${{ github.repository }}
