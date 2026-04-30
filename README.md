@@ -17,6 +17,8 @@ assets for Go repositories.
   `golangci.yml` into a target repository
 - `.github/workflows/tooling-sync.yml`: reusable workflow to open a PR syncing
   shared tooling assets into a target repository
+- `.github/workflows/dependabot-sync.yml`: reusable workflow to sync shared
+  Dependabot configuration into a target repository
 
 ## Usage
 
@@ -31,6 +33,11 @@ both the target repository and `amigo`, then runs `golangci-lint` with either:
 Use this when a repository wants a shared lint job in CI.
 
 ```yaml
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
 jobs:
   lint:
     uses: yongtenglei/amigo/.github/workflows/lint.yml@main
@@ -73,6 +80,10 @@ Use this when a repository wants Markdown formatting managed through a shared
 workflow.
 
 ```yaml
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   docs:
     uses: yongtenglei/amigo/.github/workflows/docs-format.yml@main
@@ -90,6 +101,10 @@ Use this when a repository wants to keep a checked-in `.golangci.yml` synced
 from `amigo`, usually together with `lint.yml`.
 
 ```yaml
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   lint:
     uses: yongtenglei/amigo/.github/workflows/lint-sync.yml@main
@@ -107,9 +122,36 @@ Use this when a repository wants to keep shared tooling files synced from
 `amigo`.
 
 ```yaml
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   tooling:
     uses: yongtenglei/amigo/.github/workflows/tooling-sync.yml@main
+    secrets:
+      amigo_token: ${{ secrets.AMIGO_TOKEN }}
+```
+
+### `dependabot-sync.yml`
+
+This workflow assembles the expected Dependabot configuration from
+`amigo/.github/dependabot.yml` (base), shared additions such as
+`amigo/dependabot/dependabot-gomod.yml`, and an optional
+`amigo/dependabot/dependabot-<repository>.yml` (repo-specific additions), then
+compares it with the target repository's `.github/dependabot.yml` and opens a
+pull request when changes are needed.
+
+Use this when a repository wants its Dependabot config managed through `amigo`.
+
+```yaml
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot-sync:
+    uses: yongtenglei/amigo/.github/workflows/dependabot-sync.yml@main
     secrets:
       amigo_token: ${{ secrets.AMIGO_TOKEN }}
 ```
