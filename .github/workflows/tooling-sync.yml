@@ -37,10 +37,11 @@ jobs:
 
       - name: Sync tooling assets
         run: |
-          mkdir -p "${{ github.repository }}/scripts"
+          mkdir -p "${{ github.repository }}/scripts/lib"
           cp amigo/templates/.markdownlint.jsonc "${{ github.repository }}/.markdownlint.jsonc"
           cp amigo/templates/.prettierrc.json "${{ github.repository }}/.prettierrc.json"
           cp amigo/templates/scripts/install_deps.sh "${{ github.repository }}/scripts/install_deps.sh"
+          cp amigo/templates/scripts/lib/output.sh "${{ github.repository }}/scripts/lib/output.sh"
 
       - name: Create pull request
         id: cpr

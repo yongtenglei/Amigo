@@ -9,6 +9,7 @@ assets for Go repositories.
 - `templates/.markdownlint.jsonc`: shared markdownlint config
 - `templates/.prettierrc.json`: shared Prettier config
 - `templates/scripts/install_deps.sh`: shared tooling installer script
+- `templates/scripts/lib/output.sh`: shared shell output helpers
 - `.github/workflows/lint.yml`: reusable lint workflow
 - `.github/workflows/build.yml`: reusable build and test workflow
 - `.github/workflows/docs-format.yml`: reusable workflow to format Markdown and

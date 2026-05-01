@@ -2,10 +2,17 @@
 
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# shellcheck source=scripts/lib/output.sh
+. "$ROOT_DIR/scripts/lib/output.sh"
+
+script_section "Go toolchain"
 if ! command -v go >/dev/null 2>&1; then
-  echo "Error: go is not installed or not in PATH."
+  script_error "go is not installed or not in PATH."
   exit 1
 fi
+script_ok "go is available"
 
 normalize_version() {
   local version="$1"
@@ -26,13 +33,13 @@ validate_version() {
   fi
 
   if [[ ! "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Error: invalid GOLANGCI_LINT_VERSION='${version}'. Use 'latest' or 'v2.X.Y'."
+    script_error "invalid GOLANGCI_LINT_VERSION='${version}'. Use 'latest' or 'v2.X.Y'."
     exit 1
   fi
 
   target_major="$(printf '%s\n' "${version}" | sed -nE 's/^v([0-9]+)\..*/\1/p')"
   if [[ "${target_major}" != "2" ]]; then
-    echo "Error: GOLANGCI_LINT_VERSION must target golangci-lint v2 (got '${version}')."
+    script_error "GOLANGCI_LINT_VERSION must target golangci-lint v2 (got '${version}')."
     exit 1
   fi
 }
@@ -65,18 +72,18 @@ verify_installation() {
 
   gobin="$(resolve_gobin)"
   if [[ ! -x "${gobin}/golangci-lint" ]]; then
-    echo "Error: golangci-lint was not found in ${gobin} after installation."
+    script_error "golangci-lint was not found in ${gobin} after installation."
     exit 1
   fi
 
   if command -v golangci-lint >/dev/null 2>&1; then
-    echo "golangci-lint installed: $(installed_version_line)"
+    script_ok "golangci-lint installed: $(installed_version_line)"
     return 0
   fi
 
-  echo "golangci-lint installed at ${gobin}/golangci-lint"
-  echo "Add this to your shell profile:"
-  echo "  export PATH=\"${gobin}:\$PATH\""
+  script_ok "golangci-lint installed at ${gobin}/golangci-lint"
+  script_warn "golangci-lint is not on PATH"
+  script_detail "Add this to your shell profile: export PATH=\"${gobin}:\$PATH\""
 }
 
 install_golangci_lint() {
@@ -86,31 +93,35 @@ install_golangci_lint() {
   local current_major=""
   local current_version=""
 
+  script_section "golangci-lint"
   version="$(normalize_version "${version}")"
+  script_detail "Requested version: ${version}"
   validate_version "${version}"
 
   if command -v golangci-lint >/dev/null 2>&1; then
     version_line="$(installed_version_line)"
     current_major="$(installed_major "${version_line}")"
     current_version="$(installed_version "${version_line}")"
+    script_detail "Detected version: ${version_line}"
 
     if [[ "${current_major}" =~ ^[0-9]+$ ]] && ((current_major >= 2)); then
       if [[ "${version}" == "latest" ]]; then
-        echo "golangci-lint v2 detected (${current_version}), reinstalling latest..."
+        script_step "Reinstalling latest golangci-lint v2..."
       elif [[ "${current_version}" == "${version}" ]]; then
-        echo "golangci-lint is already installed: ${version_line}"
+        script_ok "golangci-lint is already installed"
         return 0
       else
-        echo "golangci-lint v2 detected (${current_version}), switching to ${version}..."
+        script_step "Switching golangci-lint from ${current_version} to ${version}..."
       fi
     elif [[ "${current_major}" == "1" ]]; then
-      echo "golangci-lint v1 detected, upgrading to ${version}..."
+      script_step "Upgrading golangci-lint v1 to ${version}..."
     else
-      echo "Unable to determine golangci-lint major version from: ${version_line}"
-      echo "Reinstalling golangci-lint (${version})..."
+      script_warn "Unable to determine golangci-lint major version"
+      script_detail "${version_line}"
+      script_step "Reinstalling golangci-lint (${version})..."
     fi
   else
-    echo "Installing golangci-lint (${version})..."
+    script_step "Installing golangci-lint (${version})..."
   fi
 
   go install "${module}@${version}"
