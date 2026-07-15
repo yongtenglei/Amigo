@@ -10,6 +10,11 @@ on:
       go-version-file:
         required: false
         type: string
+      os:
+        required: false
+        type: string
+        default: '["ubuntu-latest","macos-latest","windows-latest"]'
+        description: JSON array of runner labels for the build and test matrix.
       working-directory:
         required: false
         type: string
@@ -62,10 +67,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        os: ${{ fromJSON(inputs.os) }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code

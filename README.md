@@ -25,11 +25,14 @@ assets for Go repositories.
 
 ### `lint.yml`
 
-This workflow runs `golangci-lint` on Linux, macOS, and Windows. It checks out
-both the target repository and `amigo`, then runs `golangci-lint` with either:
+This workflow runs `golangci-lint` on Linux, macOS, and Windows by default. It
+checks out both the target repository and `amigo`, then runs `golangci-lint`
+with either:
 
 - the target repository's own config via `golangci_path`
 - `amigo/golangci.yml` if `golangci_path` is not set
+
+Set `os` to a JSON array of runner labels to select the lint matrix.
 
 Use this when a repository wants a shared lint job in CI.
 
@@ -45,6 +48,7 @@ jobs:
     with:
       golangci_path: .golangci.yml
       golangci_version: v2.11.3
+      os: '["ubuntu-latest"]'
     secrets:
       amigo_token: ${{ secrets.AMIGO_TOKEN }}
 ```
@@ -54,8 +58,9 @@ jobs:
 This workflow runs two jobs:
 
 - `govulncheck` on Ubuntu
-- `go build` and `go test` on Linux, macOS, and Windows
+- `go build` and `go test` on Linux, macOS, and Windows by default
 
+Set `os` to a JSON array of runner labels to select the build and test matrix.
 Before those checks, it runs `go mod tidy` and fails if that produces working
 tree drift. Use this when a repository wants a shared Go validation pipeline.
 
@@ -65,6 +70,7 @@ jobs:
     uses: yongtenglei/amigo/.github/workflows/build.yml@main
     with:
       go-version-file: ./go.mod
+      os: '["ubuntu-latest"]'
       test-command: go test ./...
 ```
 
