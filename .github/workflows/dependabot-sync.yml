@@ -12,8 +12,9 @@ on:
         type: string
         default: ci/sync-dependabot-config
     secrets:
-      amigo_token:
+      amigo_pull_request_token:
         required: false
+        description: Token used to push the generated branch and create its pull request.
 
 permissions:
   contents: write
@@ -33,7 +34,6 @@ jobs:
         with:
           repository: ${{ inputs.amigo_repository }}
           path: amigo
-          token: ${{ secrets.amigo_token || github.token }}
 
       - name: Sync dependabot config
         shell: bash
@@ -61,7 +61,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.amigo_token || github.token }}
+          token: ${{ secrets.amigo_pull_request_token || github.token }}
           commit-message: "ci: sync dependabot config"
           title: "ci: sync dependabot config"
           body: |

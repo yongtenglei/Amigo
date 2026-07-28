@@ -12,8 +12,9 @@ on:
         required: false
         default: ci/sync-lint-config
     secrets:
-      amigo_token:
+      amigo_pull_request_token:
         required: false
+        description: Token used to push the generated branch and create its pull request.
 
 permissions:
   contents: write
@@ -33,7 +34,6 @@ jobs:
         with:
           repository: ${{ inputs.amigo_repository }}
           path: amigo
-          token: ${{ secrets.amigo_token || github.token }}
 
       - name: Sync golangci config
         run: cp amigo/golangci.yml ${{ github.repository }}/.golangci.yml
@@ -42,7 +42,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.amigo_token || github.token }}
+          token: ${{ secrets.amigo_pull_request_token || github.token }}
           commit-message: "ci: sync golangci-lint config"
           title: "ci: sync golangci-lint config"
           body: |
