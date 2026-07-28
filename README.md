@@ -47,12 +47,12 @@ Use this when a repository wants a shared lint job in CI.
 permissions:
   contents: read
   pull-requests: read
-  checks: write
 
 jobs:
   lint:
     uses: yongtenglei/amigo/.github/workflows/lint.yml@main
     with:
+      go-version-file: ./go.mod
       golangci_path: .golangci.yml
       golangci_version: v2.11.3
       os: '["ubuntu-latest"]'

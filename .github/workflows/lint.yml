@@ -19,6 +19,15 @@ on:
         type: string
         required: false
         description: Version of golangci-lint to use.
+      go-version:
+        type: string
+        required: false
+        description: Go version override. When empty, go-version-file selects the version.
+      go-version-file:
+        type: string
+        required: false
+        default: go.mod
+        description: Version file relative to the target repository.
       os:
         type: string
         required: false
@@ -31,7 +40,6 @@ on:
 permissions:
   contents: read
   pull-requests: read
-  checks: write
 
 jobs:
   lint:
@@ -57,8 +65,10 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version: ${{ inputs.go-version }}
+          go-version-file: ${{ format('{0}/{1}', github.repository, inputs.go-version-file) }}
           cache: true
+          cache-dependency-path: ${{ format('{0}/{1}', github.repository, inputs.go-version-file) }}
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9

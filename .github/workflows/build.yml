@@ -6,10 +6,12 @@ on:
       go-version:
         required: false
         type: string
-        default: stable
+        description: Go version override. When empty, go-version-file selects the version.
       go-version-file:
         required: false
         type: string
+        default: go.mod
+        description: File used to select the Go version when go-version is empty.
       os:
         required: false
         type: string
@@ -34,6 +36,9 @@ on:
         required: false
         type: string
         default: govulncheck ./...
+
+permissions:
+  contents: read
 
 jobs:
   govulncheck:
