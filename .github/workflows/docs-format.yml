@@ -94,7 +94,11 @@ jobs:
           set -euo pipefail
 
           file_list="${RUNNER_TEMP}/markdown-files.txt"
-          git ls-files -z -- '*.md' > "${file_list}"
+          while IFS= read -r -d '' path; do
+            if [[ -f "${path}" && ! -L "${path}" ]]; then
+              printf '%s\0' "${path}"
+            fi
+          done < <(git ls-files -z -- '*.md') > "${file_list}"
 
           if [[ -s "${file_list}" ]]; then
             echo "found=true" >> "$GITHUB_OUTPUT"
