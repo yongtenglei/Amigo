@@ -6,7 +6,7 @@ on:
       amigo_repository:
         type: string
         required: false
-        default: yongtenglei/amigo
+        default: yongtenglei/Amigo
       sync_branch:
         required: false
         type: string

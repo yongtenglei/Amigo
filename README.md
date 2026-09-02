@@ -50,7 +50,7 @@ permissions:
 
 jobs:
   lint:
-    uses: yongtenglei/amigo/.github/workflows/lint.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/lint.yml@main
     with:
       go-version-file: ./go.mod
       golangci_path: .golangci.yml
@@ -72,7 +72,7 @@ pipeline.
 ```yaml
 jobs:
   build:
-    uses: yongtenglei/amigo/.github/workflows/build.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/build.yml@main
     with:
       go-version-file: ./go.mod
       os: '["ubuntu-latest"]'
@@ -95,7 +95,7 @@ permissions:
 
 jobs:
   docs:
-    uses: yongtenglei/amigo/.github/workflows/docs-format.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/docs-format.yml@main
     secrets:
       amigo_pull_request_token: ${{ secrets.AMIGO_PULL_REQUEST_TOKEN }}
 ```
@@ -115,7 +115,7 @@ permissions:
 
 jobs:
   lint:
-    uses: yongtenglei/amigo/.github/workflows/lint-sync.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/lint-sync.yml@main
     secrets:
       amigo_pull_request_token: ${{ secrets.AMIGO_PULL_REQUEST_TOKEN }}
 ```
@@ -134,7 +134,7 @@ permissions:
 
 jobs:
   tooling:
-    uses: yongtenglei/amigo/.github/workflows/tooling-sync.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/tooling-sync.yml@main
     secrets:
       amigo_pull_request_token: ${{ secrets.AMIGO_PULL_REQUEST_TOKEN }}
 ```
@@ -155,7 +155,7 @@ permissions:
 
 jobs:
   dependabot-sync:
-    uses: yongtenglei/amigo/.github/workflows/dependabot-sync.yml@main
+    uses: yongtenglei/Amigo/.github/workflows/dependabot-sync.yml@main
     secrets:
       amigo_pull_request_token: ${{ secrets.AMIGO_PULL_REQUEST_TOKEN }}
 ```

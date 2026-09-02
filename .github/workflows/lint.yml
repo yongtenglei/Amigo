@@ -59,7 +59,7 @@ jobs:
       - name: Checkout amigo repository
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.amigo_repository || 'yongtenglei/amigo' }}
+          repository: ${{ inputs.amigo_repository || 'yongtenglei/Amigo' }}
           path: amigo
 
       - name: Install Go
